@@ -1,56 +1,48 @@
-
 <!DOCTYPE html>
-
 <html>
-
   <head>
     <meta charset="UTF-8">
     <title>Canvas</title>
-
-    <style type="text/css">
+    <style>
       body {
-          background-color: white;
-          canvas {
-          border: 1px solid black;
-          }
+        background-color: white;
+      }
+      canvas {
+        border: 1px solid black;
       }
     </style>
-
   </head>
-  <h1>
-    Luke Deane
-  </h1>
 
   <body>
+    <h1>Luke Deane</h1>
 
     <canvas id="canvas-for-ball"></canvas>
 
-    <script type="text/javascript">
-      // Gets a handle to the element with id canvasOne.
+    <script>
       var canvas = document.getElementById("canvas-for-ball");
-      // Get a 2D context for the canvas.
       var ctx = canvas.getContext("2d");
-      
-      // The vertical location of the ball.
+
       var y = 10;
-      // A function to repeat every time the animation loops.
+      var radius = 3;
+      var dy = 1;
+
       function repeatme() {
-        // Draw the ball (stroked, not filled).
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.beginPath();
-        ctx.arc(50, y, 3, 0, 2 * Math.PI);
+        ctx.arc(50, y, radius, 0, 2 * Math.PI);
         ctx.stroke();
-        y += 1;
-        ctx.clearRect(left, top, width, height);
-        
-       
-        
+
+        // If the ball hits the bottom of the canvas.
+        if (y + dy > canvas.height - radius) {
+          // Stop the ball.
+          return;
+        }
+
+        y += dy;
         window.requestAnimationFrame(repeatme);
       }
-      
-      // Get the animation going.
+
       repeatme();
     </script>
-
   </body>
-
 </html>
