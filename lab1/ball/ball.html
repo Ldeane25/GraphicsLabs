@@ -24,21 +24,21 @@
 
       var y = 10;
       var radius = 3;
-      var dy = 1;
+      var ySpeed = 1;
 
       function repeatme() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.beginPath();
         ctx.arc(50, y, radius, 0, 2 * Math.PI);
         ctx.stroke();
-
+          y=y+ySpeed;
         // If the ball hits the bottom of the canvas.
-        if (y + dy > canvas.height - radius) {
+        if (y > canvas.height - radius) {
           // Stop the ball.
-          return;
+          ySpeed=-1;
         }
 
-        y += dy;
+        
         window.requestAnimationFrame(repeatme);
       }
 
