@@ -10,10 +10,16 @@
     <style type="text/css">
       body {
           background-color: white;
+          canvas {
+          border: 1px solid black;
+          }
       }
     </style>
 
   </head>
+  <h1>
+    Luke Deane
+  </h1>
 
   <body>
 
@@ -33,9 +39,10 @@
         ctx.beginPath();
         ctx.arc(50, y, 3, 0, 2 * Math.PI);
         ctx.stroke();
-        
-        // Update the y location.
         y += 1;
+        ctx.clearRect(left, top, width, height);
+        
+       
         
         window.requestAnimationFrame(repeatme);
       }
