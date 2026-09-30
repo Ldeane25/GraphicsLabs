@@ -8,35 +8,47 @@
 
     <style type="text/css">
       canvas {
-        border: 1px solid grey; 
+        border: 1px solid grey;
       }
     </style>
 
   </head>
 
   <body>
-	<p>This is a paragraph.</p>
+
+    <p>This is a paragraph.</p>
 
     <canvas id="canvas-for-ball"></canvas>
 
     <script type="text/javascript">
+
       var noClicks = 0;
-      
-      // Gets a handle to the element with id canvasOne.
+
+      // Gets a handle to the canvas.
       var canvas = document.getElementById("canvas-for-ball");
+
       // Get a 2D context for the canvas.
       var ctx = canvas.getContext("2d");
+
       // Make the fill style red.
       ctx.fillStyle = "rgb(255, 0, 0)";
-      
-      canvas.addEventListener("click", function(event) { 
+
+      // Add a click event listener to the canvas.
+      canvas.addEventListener("click", function(event) {
+
+        // Log the event variable to the console.
+        console.log(event);
+
+        // Draw the circle at the mouse position.
         ctx.beginPath();
         ctx.arc(event.clientX, event.clientY, 6, 0, 2 * Math.PI);
         ctx.fill();
-        
+
         noClicks += 1;
         console.log(noClicks);
+
       });
+
     </script>
 
   </body>
