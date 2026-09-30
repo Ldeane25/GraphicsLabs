@@ -110,6 +110,33 @@
         this.xpos = this.xpos + xSpeed;
         this.ypos = this.ypos + ySpeed;
 
+        // Stop the paddle going above the canvas.
+        if (this.ypos < 0) {
+          this.ypos = 0;
+        }
+
+        // Stop the paddle going below the canvas.
+        if (this.ypos + this.height > canvas.height) {
+          this.ypos = canvas.height - this.height;
+        }
+
+      }
+
+
+      moveToMouse(mouseY) {
+
+        this.ypos = mouseY - (this.height / 2);
+
+        // Stop the paddle going above the canvas.
+        if (this.ypos < 0) {
+          this.ypos = 0;
+        }
+
+        // Stop the paddle going below the canvas.
+        if (this.ypos + this.height > canvas.height) {
+          this.ypos = canvas.height - this.height;
+        }
+
       }
 
     }
@@ -120,15 +147,72 @@
     var paddle = new Paddle(20, 50, 10, 50);
 
 
+    var upPressed = false;
+    var downPressed = false;
+
+
+    // Detect keyboard keys being pressed.
+    window.addEventListener("keydown", function(event) {
+
+      if (event.key === "ArrowUp") {
+        upPressed = true;
+        event.preventDefault();
+      }
+
+      if (event.key === "ArrowDown") {
+        downPressed = true;
+        event.preventDefault();
+      }
+
+    });
+
+
+    // Detect keyboard keys being released.
+    window.addEventListener("keyup", function(event) {
+
+      if (event.key === "ArrowUp") {
+        upPressed = false;
+      }
+
+      if (event.key === "ArrowDown") {
+        downPressed = false;
+      }
+
+    });
+
+
+    // Move the paddle to the mouse Y-coordinate.
+    canvas.addEventListener("mousemove", function(event) {
+
+      var rect = canvas.getBoundingClientRect();
+
+      var mouseY = event.clientY - rect.top;
+
+      paddle.moveToMouse(mouseY);
+
+    });
+
+
     function repeatme() {
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+
+      // Move the paddle with the keyboard.
+      if (upPressed) {
+        paddle.move(0, -5);
+      }
+
+      if (downPressed) {
+        paddle.move(0, 5);
+      }
+
 
       ball.draw();
       ball.move();
 
       paddle.draw();
-      paddle.move(0, 0);
+
 
       window.requestAnimationFrame(repeatme);
 
