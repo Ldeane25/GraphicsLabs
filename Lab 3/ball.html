@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title>Canvas</title>
+
+  <style>
+    body {
+      background-color: white;
+    }
+
+    canvas {
+      border: 1px solid black;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>Luke Deane</h1>
+
+  <canvas id="canvas-for-ball"></canvas>
+
+  <script>
+
+    var canvas = document.getElementById("canvas-for-ball");
+    var ctx = canvas.getContext("2d");
+
+
+    class Ball {
+
+      constructor(xpos, ypos, xSpeed, ySpeed, r) {
+        this.xpos = xpos;
+        this.ypos = ypos;
+        this.xSpeed = xSpeed;
+        this.ySpeed = ySpeed;
+        this.r = r;
+      }
+
+
+      move() {
+
+        this.xpos = this.xpos + this.xSpeed;
+        this.ypos = this.ypos + this.ySpeed;
+
+        // Bounce off the left and right sides.
+        if (this.xpos >= canvas.width - this.r) {
+          this.xSpeed = -this.xSpeed;
+        }
+
+        else if (this.xpos <= this.r) {
+          this.xSpeed = -this.xSpeed;
+        }
+
+
+        // Bounce off the top and bottom.
+        if (this.ypos >= canvas.height - this.r) {
+          this.ySpeed = -this.ySpeed;
+        }
+
+        else if (this.ypos <= this.r) {
+          this.ySpeed = -this.ySpeed;
+        }
+      }
+
+
+      draw() {
+
+        ctx.beginPath();
+        ctx.arc(this.xpos, this.ypos, this.r, 0, 2 * Math.PI);
+        ctx.stroke();
+
+      }
+
+
+      resize(newRadius) {
+
+        this.r = newRadius;
+
+      }
+
+    }
+
+
+    class Paddle {
+
+      constructor(xpos, ypos, width, height) {
+        this.xpos = xpos;
+        this.ypos = ypos;
+        this.width = width;
+        this.height = height;
+      }
+
+
+      draw() {
+
+        ctx.fillRect(
+          this.xpos,
+          this.ypos,
+          this.width,
+          this.height
+        );
+
+      }
+
+
+      move(xSpeed, ySpeed) {
+
+        this.xpos = this.xpos + xSpeed;
+        this.ypos = this.ypos + ySpeed;
+
+      }
+
+    }
+
+
+    var ball = new Ball(50, 10, 2, 1, 3);
+
+    var paddle = new Paddle(20, 50, 10, 50);
+
+
+    function repeatme() {
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      ball.draw();
+      ball.move();
+
+      paddle.draw();
+      paddle.move(0, 0);
+
+      window.requestAnimationFrame(repeatme);
+
+    }
+
+
+    repeatme();
+
+  </script>
+
+</body>
+
+</html>
