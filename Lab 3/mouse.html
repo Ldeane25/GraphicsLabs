@@ -39,9 +39,13 @@
         // Log the event variable to the console.
         console.log(event);
 
-        // Draw the circle at the mouse position.
+        // Get the position of the canvas.
+        var x = event.clientX - canvas.offsetLeft;
+        var y = event.clientY - canvas.offsetTop;
+
+        // Draw the circle with its centre at the mouse cursor.
         ctx.beginPath();
-        ctx.arc(event.clientX, event.clientY, 6, 0, 2 * Math.PI);
+        ctx.arc(x, y, 6, 0, 2 * Math.PI);
         ctx.fill();
 
         noClicks += 1;
