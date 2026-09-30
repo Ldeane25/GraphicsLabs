@@ -62,6 +62,7 @@
         else if (this.ypos <= this.r) {
           this.ySpeed = -this.ySpeed;
         }
+
       }
 
 
@@ -142,18 +143,32 @@
     }
 
 
+    // Create the ball.
     var ball = new Ball(50, 10, 2, 1, 3);
 
-    var paddle = new Paddle(20, 50, 10, 50);
+
+    // Create the first paddle on the left.
+    var paddle1 = new Paddle(20, 50, 10, 50);
 
 
+    // Create the second paddle on the right.
+    var paddle2 = new Paddle(canvas.width - 30, 50, 10, 50);
+
+
+    // Keyboard control variables for paddle 1.
     var upPressed = false;
     var downPressed = false;
+
+
+    // Keyboard control variables for paddle 2.
+    var wPressed = false;
+    var sPressed = false;
 
 
     // Detect keyboard keys being pressed.
     window.addEventListener("keydown", function(event) {
 
+      // Paddle 1 - Up and Down arrows.
       if (event.key === "ArrowUp") {
         upPressed = true;
         event.preventDefault();
@@ -164,12 +179,23 @@
         event.preventDefault();
       }
 
+
+      // Paddle 2 - W and S.
+      if (event.key.toLowerCase() === "w") {
+        wPressed = true;
+      }
+
+      if (event.key.toLowerCase() === "s") {
+        sPressed = true;
+      }
+
     });
 
 
     // Detect keyboard keys being released.
     window.addEventListener("keyup", function(event) {
 
+      // Paddle 1 - Up and Down arrows.
       if (event.key === "ArrowUp") {
         upPressed = false;
       }
@@ -178,17 +204,27 @@
         downPressed = false;
       }
 
+
+      // Paddle 2 - W and S.
+      if (event.key.toLowerCase() === "w") {
+        wPressed = false;
+      }
+
+      if (event.key.toLowerCase() === "s") {
+        sPressed = false;
+      }
+
     });
 
 
-    // Move the paddle to the mouse Y-coordinate.
+    // Move paddle 1 to the mouse Y-coordinate.
     canvas.addEventListener("mousemove", function(event) {
 
       var rect = canvas.getBoundingClientRect();
 
       var mouseY = event.clientY - rect.top;
 
-      paddle.moveToMouse(mouseY);
+      paddle1.moveToMouse(mouseY);
 
     });
 
@@ -198,20 +234,34 @@
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
 
-      // Move the paddle with the keyboard.
+      // Move paddle 1 with the keyboard.
       if (upPressed) {
-        paddle.move(0, -5);
+        paddle1.move(0, -5);
       }
 
       if (downPressed) {
-        paddle.move(0, 5);
+        paddle1.move(0, 5);
       }
 
 
+      // Move paddle 2 with W and S.
+      if (wPressed) {
+        paddle2.move(0, -5);
+      }
+
+      if (sPressed) {
+        paddle2.move(0, 5);
+      }
+
+
+      // Draw and move the ball.
       ball.draw();
       ball.move();
 
-      paddle.draw();
+
+      // Draw both paddles.
+      paddle1.draw();
+      paddle2.draw();
 
 
       window.requestAnimationFrame(repeatme);
