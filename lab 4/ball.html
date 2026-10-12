@@ -225,6 +225,39 @@
     });
 
 
+    // Circle collision detection: two circles collide when the distance
+    // between their centres is less than the sum of their radii.
+    function circlesCollide(a, b) {
+
+      var dx = a.xpos - b.xpos;
+      var dy = a.ypos - b.ypos;
+
+      var distance = Math.sqrt(dx * dx + dy * dy);
+
+      return distance < a.r + b.r;
+
+    }
+
+
+    // Collision message variables.
+    var messageEndTime = 0;           // time (ms) when the message should disappear
+    var paddle1Touching = false;      // was paddle 1 already touching the ball last frame?
+    var paddle2Touching = false;      // was paddle 2 already touching the ball last frame?
+
+
+    // Draw the collision message while it is still within its 1 second.
+    function drawCollisionMessage() {
+
+      if (Date.now() < messageEndTime) {
+        ctx.fillStyle = "black";
+        ctx.font = "16px Arial";
+        ctx.textAlign = "center";
+        ctx.fillText("Collision!", canvas.width / 2, canvas.height / 2);
+      }
+
+    }
+
+
     function repeatme() {
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -255,9 +288,31 @@
       ball.move();
 
 
+      // Check for collisions between the ball and each paddle.
+      var hit1 = circlesCollide(paddle1, ball);
+      var hit2 = circlesCollide(paddle2, ball);
+
+      // Only react when a NEW collision starts (not every frame of an overlap).
+      if (hit1 && !paddle1Touching) {
+        messageEndTime = Date.now() + 1000;
+      }
+
+      if (hit2 && !paddle2Touching) {
+        messageEndTime = Date.now() + 1000;
+      }
+
+      paddle1Touching = hit1;
+      paddle2Touching = hit2;
+
+
       // Draw both paddles.
+      ctx.fillStyle = "black";
       paddle1.draw();
       paddle2.draw();
+
+
+      // Show the collision message (if active).
+      drawCollisionMessage();
 
 
       window.requestAnimationFrame(repeatme);
