@@ -27,7 +27,6 @@
     var canvas = document.getElementById("canvas-for-ball");
     var ctx = canvas.getContext("2d");
 
-
     class Ball {
 
       constructor(xpos, ypos, xSpeed, ySpeed, r) {
@@ -84,24 +83,37 @@
     }
 
 
+    // The paddle is now a circle. (xpos, ypos) is the CENTRE of the circle.
     class Paddle {
 
-      constructor(xpos, ypos, width, height) {
+      constructor(xpos, ypos, r) {
         this.xpos = xpos;
         this.ypos = ypos;
-        this.width = width;
-        this.height = height;
+        this.r = r;
       }
 
 
       draw() {
 
-        ctx.fillRect(
-          this.xpos,
-          this.ypos,
-          this.width,
-          this.height
-        );
+        ctx.beginPath();
+        ctx.arc(this.xpos, this.ypos, this.r, 0, 2 * Math.PI);
+        ctx.fill();
+
+      }
+
+
+      // Keep the whole circle inside the canvas vertically.
+      keepOnCanvas() {
+
+        // Stop the paddle going above the canvas.
+        if (this.ypos < this.r) {
+          this.ypos = this.r;
+        }
+
+        // Stop the paddle going below the canvas.
+        if (this.ypos > canvas.height - this.r) {
+          this.ypos = canvas.height - this.r;
+        }
 
       }
 
@@ -111,32 +123,16 @@
         this.xpos = this.xpos + xSpeed;
         this.ypos = this.ypos + ySpeed;
 
-        // Stop the paddle going above the canvas.
-        if (this.ypos < 0) {
-          this.ypos = 0;
-        }
-
-        // Stop the paddle going below the canvas.
-        if (this.ypos + this.height > canvas.height) {
-          this.ypos = canvas.height - this.height;
-        }
+        this.keepOnCanvas();
 
       }
 
 
       moveToMouse(mouseY) {
 
-        this.ypos = mouseY - (this.height / 2);
+        this.ypos = mouseY;
 
-        // Stop the paddle going above the canvas.
-        if (this.ypos < 0) {
-          this.ypos = 0;
-        }
-
-        // Stop the paddle going below the canvas.
-        if (this.ypos + this.height > canvas.height) {
-          this.ypos = canvas.height - this.height;
-        }
+        this.keepOnCanvas();
 
       }
 
@@ -148,11 +144,11 @@
 
 
     // Create the first paddle on the left.
-    var paddle1 = new Paddle(20, 50, 10, 50);
+    var paddle1 = new Paddle(30, canvas.height / 2, 15);
 
 
     // Create the second paddle on the right.
-    var paddle2 = new Paddle(canvas.width - 30, 50, 10, 50);
+    var paddle2 = new Paddle(canvas.width - 30, canvas.height / 2, 15);
 
 
     // Keyboard control variables for paddle 1.
