@@ -27,6 +27,26 @@
     var canvas = document.getElementById("canvas-for-ball");
     var ctx = canvas.getContext("2d");
 
+    // Fill a circle with a radial gradient: a white highlight (offset towards
+    // the top-left) fading out to the given colour at the edge.
+    function drawGradientCircle(x, y, r, colour) {
+
+      var gradient = ctx.createRadialGradient(
+        x - r / 3, y - r / 3, r / 10,   // inner circle (the highlight)
+        x, y, r                         // outer circle (the edge of the ball)
+      );
+
+      gradient.addColorStop(0, "white");
+      gradient.addColorStop(1, colour);
+
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, 2 * Math.PI);
+      ctx.fillStyle = gradient;
+      ctx.fill();
+
+    }
+
+
     class Ball {
 
       constructor(xpos, ypos, xSpeed, ySpeed, r, colour) {
@@ -77,10 +97,10 @@
 
       draw() {
 
+        drawGradientCircle(this.xpos, this.ypos, this.r, this.colour);
+
         ctx.beginPath();
         ctx.arc(this.xpos, this.ypos, this.r, 0, 2 * Math.PI);
-        ctx.fillStyle = this.colour;
-        ctx.fill();
         ctx.stroke();
 
       }
@@ -98,19 +118,18 @@
     // The paddle is now a circle. (xpos, ypos) is the CENTRE of the circle.
     class Paddle {
 
-      constructor(xpos, ypos, r) {
+      constructor(xpos, ypos, r, colour) {
         this.xpos = xpos;
         this.ypos = ypos;
         this.r = r;
+        this.colour = colour;
         this.score = 0;
       }
 
 
       draw() {
 
-        ctx.beginPath();
-        ctx.arc(this.xpos, this.ypos, this.r, 0, 2 * Math.PI);
-        ctx.fill();
+        drawGradientCircle(this.xpos, this.ypos, this.r, this.colour);
 
       }
 
@@ -157,11 +176,11 @@
 
 
     // Create the first paddle on the left.
-    var paddle1 = new Paddle(30, canvas.height / 2, 15);
+    var paddle1 = new Paddle(30, canvas.height / 2, 15, "blue");
 
 
     // Create the second paddle on the right.
-    var paddle2 = new Paddle(canvas.width - 30, canvas.height / 2, 15);
+    var paddle2 = new Paddle(canvas.width - 30, canvas.height / 2, 15, "green");
 
 
     // Keyboard control variables for paddle 1.
@@ -364,7 +383,6 @@
 
 
       // Draw both paddles.
-      ctx.fillStyle = "black";
       paddle1.draw();
       paddle2.draw();
 
