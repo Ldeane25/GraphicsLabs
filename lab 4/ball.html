@@ -29,12 +29,13 @@
 
     class Ball {
 
-      constructor(xpos, ypos, xSpeed, ySpeed, r) {
+      constructor(xpos, ypos, xSpeed, ySpeed, r, colour) {
         this.xpos = xpos;
         this.ypos = ypos;
         this.xSpeed = xSpeed;
         this.ySpeed = ySpeed;
         this.r = r;
+        this.colour = colour;
       }
 
 
@@ -78,6 +79,8 @@
 
         ctx.beginPath();
         ctx.arc(this.xpos, this.ypos, this.r, 0, 2 * Math.PI);
+        ctx.fillStyle = this.colour;
+        ctx.fill();
         ctx.stroke();
 
       }
@@ -149,8 +152,8 @@
     }
 
 
-    // Create the ball.
-    var ball = new Ball(50, 10, 2, 1, 3);
+    // Create the ball. The last argument is the ball colour.
+    var ball = new Ball(50, 10, 2, 1, 3, "red");
 
 
     // Create the first paddle on the left.
