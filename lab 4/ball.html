@@ -38,29 +38,38 @@
       }
 
 
+      // Moves the ball and returns "left" or "right" if it hit one of
+      // those walls this frame (otherwise returns null).
+      // There is no gravity: the speeds only change when the ball bounces.
       move() {
+
+        var wallHit = null;
 
         this.xpos = this.xpos + this.xSpeed;
         this.ypos = this.ypos + this.ySpeed;
 
         // Bounce off the left and right sides.
-        if (this.xpos >= canvas.width - this.r) {
+        if (this.xpos >= canvas.width - this.r && this.xSpeed > 0) {
           this.xSpeed = -this.xSpeed;
+          wallHit = "right";
         }
 
-        else if (this.xpos <= this.r) {
+        else if (this.xpos <= this.r && this.xSpeed < 0) {
           this.xSpeed = -this.xSpeed;
+          wallHit = "left";
         }
 
 
         // Bounce off the top and bottom.
-        if (this.ypos >= canvas.height - this.r) {
+        if (this.ypos >= canvas.height - this.r && this.ySpeed > 0) {
           this.ySpeed = -this.ySpeed;
         }
 
-        else if (this.ypos <= this.r) {
+        else if (this.ypos <= this.r && this.ySpeed < 0) {
           this.ySpeed = -this.ySpeed;
         }
+
+        return wallHit;
 
       }
 
@@ -90,6 +99,7 @@
         this.xpos = xpos;
         this.ypos = ypos;
         this.r = r;
+        this.score = 0;
       }
 
 
@@ -273,6 +283,21 @@
     }
 
 
+    // Display the score for each paddle at the top of the canvas.
+    function drawScores() {
+
+      ctx.fillStyle = "black";
+      ctx.font = "14px Arial";
+
+      ctx.textAlign = "left";
+      ctx.fillText("Paddle 1: " + paddle1.score, 10, 18);
+
+      ctx.textAlign = "right";
+      ctx.fillText("Paddle 2: " + paddle2.score, canvas.width - 10, 18);
+
+    }
+
+
     function repeatme() {
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -300,7 +325,18 @@
 
       // Draw and move the ball.
       ball.draw();
-      ball.move();
+      var wallHit = ball.move();
+
+
+      // Paddle 1 is on the left, paddle 2 is on the right.
+      // Hitting the wall behind a paddle costs that paddle a point.
+      if (wallHit === "left") {
+        paddle1.score = paddle1.score - 1;
+      }
+
+      if (wallHit === "right") {
+        paddle2.score = paddle2.score - 1;
+      }
 
 
       // Check for collisions between the ball and each paddle.
@@ -311,11 +347,13 @@
       if (hit1 && !paddle1Touching) {
         messageEndTime = Date.now() + 1000;
         reboundOffPaddle(ball, paddle1);
+        paddle1.score = paddle1.score + 1;
       }
 
       if (hit2 && !paddle2Touching) {
         messageEndTime = Date.now() + 1000;
         reboundOffPaddle(ball, paddle2);
+        paddle2.score = paddle2.score + 1;
       }
 
       paddle1Touching = hit1;
@@ -328,8 +366,9 @@
       paddle2.draw();
 
 
-      // Show the collision message (if active).
+      // Show the collision message (if active) and the scores.
       drawCollisionMessage();
+      drawScores();
 
 
       window.requestAnimationFrame(repeatme);
