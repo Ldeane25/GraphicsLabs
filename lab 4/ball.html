@@ -239,6 +239,21 @@
     }
 
 
+    // Rebound the ball off a paddle, like it does off a wall (simplified).
+    // The x-direction is flipped so the ball always heads away from the paddle.
+    function reboundOffPaddle(ball, paddle) {
+
+      if (ball.xpos > paddle.xpos) {
+        ball.xSpeed = Math.abs(ball.xSpeed);     // ball is right of paddle -> go right
+      }
+
+      else {
+        ball.xSpeed = -Math.abs(ball.xSpeed);    // ball is left of paddle -> go left
+      }
+
+    }
+
+
     // Collision message variables.
     var messageEndTime = 0;           // time (ms) when the message should disappear
     var paddle1Touching = false;      // was paddle 1 already touching the ball last frame?
@@ -295,10 +310,12 @@
       // Only react when a NEW collision starts (not every frame of an overlap).
       if (hit1 && !paddle1Touching) {
         messageEndTime = Date.now() + 1000;
+        reboundOffPaddle(ball, paddle1);
       }
 
       if (hit2 && !paddle2Touching) {
         messageEndTime = Date.now() + 1000;
+        reboundOffPaddle(ball, paddle2);
       }
 
       paddle1Touching = hit1;
