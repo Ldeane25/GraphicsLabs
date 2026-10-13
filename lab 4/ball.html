@@ -27,45 +27,77 @@
     var canvas = document.getElementById("canvas-for-ball");
     var ctx = canvas.getContext("2d");
 
+    // Fill a circle with a radial gradient: a white highlight (offset towards
+    // the top-left) fading out to the given colour at the edge.
+    function drawGradientCircle(x, y, r, colour) {
+
+      var gradient = ctx.createRadialGradient(
+        x - r / 3, y - r / 3, r / 10,   // inner circle (the highlight)
+        x, y, r                         // outer circle (the edge of the ball)
+      );
+
+      gradient.addColorStop(0, "white");
+      gradient.addColorStop(1, colour);
+
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, 2 * Math.PI);
+      ctx.fillStyle = gradient;
+      ctx.fill();
+
+    }
+
+
     class Ball {
 
-      constructor(xpos, ypos, xSpeed, ySpeed, r) {
+      constructor(xpos, ypos, xSpeed, ySpeed, r, colour) {
         this.xpos = xpos;
         this.ypos = ypos;
         this.xSpeed = xSpeed;
         this.ySpeed = ySpeed;
         this.r = r;
+        this.colour = colour;
       }
 
 
+      // Moves the ball and returns "left" or "right" if it hit one of
+      // those walls this frame (otherwise returns null).
+      // There is no gravity: the speeds only change when the ball bounces.
       move() {
+
+        var wallHit = null;
 
         this.xpos = this.xpos + this.xSpeed;
         this.ypos = this.ypos + this.ySpeed;
 
         // Bounce off the left and right sides.
-        if (this.xpos >= canvas.width - this.r) {
+        if (this.xpos >= canvas.width - this.r && this.xSpeed > 0) {
           this.xSpeed = -this.xSpeed;
+          wallHit = "right";
         }
 
-        else if (this.xpos <= this.r) {
+        else if (this.xpos <= this.r && this.xSpeed < 0) {
           this.xSpeed = -this.xSpeed;
+          wallHit = "left";
         }
 
 
         // Bounce off the top and bottom.
-        if (this.ypos >= canvas.height - this.r) {
+        if (this.ypos >= canvas.height - this.r && this.ySpeed > 0) {
           this.ySpeed = -this.ySpeed;
         }
 
-        else if (this.ypos <= this.r) {
+        else if (this.ypos <= this.r && this.ySpeed < 0) {
           this.ySpeed = -this.ySpeed;
         }
+
+        return wallHit;
 
       }
 
 
       draw() {
+
+        drawGradientCircle(this.xpos, this.ypos, this.r, this.colour);
 
         ctx.beginPath();
         ctx.arc(this.xpos, this.ypos, this.r, 0, 2 * Math.PI);
@@ -86,18 +118,18 @@
     // The paddle is now a circle. (xpos, ypos) is the CENTRE of the circle.
     class Paddle {
 
-      constructor(xpos, ypos, r) {
+      constructor(xpos, ypos, r, colour) {
         this.xpos = xpos;
         this.ypos = ypos;
         this.r = r;
+        this.colour = colour;
+        this.score = 0;
       }
 
 
       draw() {
 
-        ctx.beginPath();
-        ctx.arc(this.xpos, this.ypos, this.r, 0, 2 * Math.PI);
-        ctx.fill();
+        drawGradientCircle(this.xpos, this.ypos, this.r, this.colour);
 
       }
 
@@ -139,16 +171,16 @@
     }
 
 
-    // Create the ball.
-    var ball = new Ball(50, 10, 2, 1, 3);
+    // Create the ball. The last argument is the ball colour.
+    var ball = new Ball(50, 10, 2, 1, 3, "red");
 
 
     // Create the first paddle on the left.
-    var paddle1 = new Paddle(30, canvas.height / 2, 15);
+    var paddle1 = new Paddle(30, canvas.height / 2, 15, "blue");
 
 
     // Create the second paddle on the right.
-    var paddle2 = new Paddle(canvas.width - 30, canvas.height / 2, 15);
+    var paddle2 = new Paddle(canvas.width - 30, canvas.height / 2, 15, "green");
 
 
     // Keyboard control variables for paddle 1.
@@ -225,6 +257,69 @@
     });
 
 
+    // Circle collision detection: two circles collide when the distance
+    // between their centres is less than the sum of their radii.
+    function circlesCollide(a, b) {
+
+      var dx = a.xpos - b.xpos;
+      var dy = a.ypos - b.ypos;
+
+      var distance = Math.sqrt(dx * dx + dy * dy);
+
+      return distance < a.r + b.r;
+
+    }
+
+
+    // Rebound the ball off a paddle, like it does off a wall (simplified).
+    // The x-direction is flipped so the ball always heads away from the paddle.
+    function reboundOffPaddle(ball, paddle) {
+
+      if (ball.xpos > paddle.xpos) {
+        ball.xSpeed = Math.abs(ball.xSpeed);     // ball is right of paddle -> go right
+      }
+
+      else {
+        ball.xSpeed = -Math.abs(ball.xSpeed);    // ball is left of paddle -> go left
+      }
+
+    }
+
+
+    // Collision message variables.
+    var messageEndTime = 0;           // time (ms) when the message should disappear
+    var paddle1Touching = false;      // was paddle 1 already touching the ball last frame?
+    var paddle2Touching = false;      // was paddle 2 already touching the ball last frame?
+
+
+    // Draw the collision message while it is still within its 1 second.
+    function drawCollisionMessage() {
+
+      if (Date.now() < messageEndTime) {
+        ctx.fillStyle = "black";
+        ctx.font = "16px Arial";
+        ctx.textAlign = "center";
+        ctx.fillText("Collision!", canvas.width / 2, canvas.height / 2);
+      }
+
+    }
+
+
+    // Display the score for each paddle at the top of the canvas.
+    function drawScores() {
+
+      ctx.fillStyle = "black";
+      ctx.font = "14px Arial";
+
+      ctx.textAlign = "left";
+      ctx.fillText("Paddle 1: " + paddle1.score, 10, 18);
+
+      ctx.textAlign = "right";
+      ctx.fillText("Paddle 2: " + paddle2.score, canvas.width - 10, 18);
+
+    }
+
+
     function repeatme() {
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -252,12 +347,49 @@
 
       // Draw and move the ball.
       ball.draw();
-      ball.move();
+      var wallHit = ball.move();
+
+
+      // Paddle 1 is on the left, paddle 2 is on the right.
+      // Hitting the wall behind a paddle costs that paddle a point.
+      if (wallHit === "left") {
+        paddle1.score = paddle1.score - 1;
+      }
+
+      if (wallHit === "right") {
+        paddle2.score = paddle2.score - 1;
+      }
+
+
+      // Check for collisions between the ball and each paddle.
+      var hit1 = circlesCollide(paddle1, ball);
+      var hit2 = circlesCollide(paddle2, ball);
+
+      // Only react when a NEW collision starts (not every frame of an overlap).
+      if (hit1 && !paddle1Touching) {
+        messageEndTime = Date.now() + 1000;
+        reboundOffPaddle(ball, paddle1);
+        paddle1.score = paddle1.score + 1;
+      }
+
+      if (hit2 && !paddle2Touching) {
+        messageEndTime = Date.now() + 1000;
+        reboundOffPaddle(ball, paddle2);
+        paddle2.score = paddle2.score + 1;
+      }
+
+      paddle1Touching = hit1;
+      paddle2Touching = hit2;
 
 
       // Draw both paddles.
       paddle1.draw();
       paddle2.draw();
+
+
+      // Show the collision message (if active) and the scores.
+      drawCollisionMessage();
+      drawScores();
 
 
       window.requestAnimationFrame(repeatme);
