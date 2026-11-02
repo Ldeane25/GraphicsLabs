@@ -27,20 +27,65 @@
         // Set camera position
         camera.position.z = 5;
 
-        // Create sphere geometry
-        var geometry = new THREE.SphereGeometry(1, 32, 32);
+        // Sphere class to manage geometry, material and movement
+        class Sphere {
 
-        // Create sphere material with wireframe disabled
-        var material = new THREE.MeshLambertMaterial({
-            color: 0x00ff00,
-            wireframe: false
-        });
+            constructor() {
 
-        // Create sphere using geometry and material
-        var sphere = new THREE.Mesh(geometry, material);
+                // Create sphere geometry
+                this.geometry = new THREE.SphereGeometry(1, 32, 32);
 
-        // Add sphere to the scene
-        scene.add(sphere);
+                // Create sphere material with wireframe disabled
+                this.material = new THREE.MeshLambertMaterial({
+                    color: 0x00ff00,
+                    wireframe: false
+                });
+
+                // Create sphere using geometry and material
+                this.mesh = new THREE.Mesh(this.geometry, this.material);
+
+                // Set horizontal movement speed
+                this.moveSpeed = 0.02;
+
+                // Set initial movement direction
+                this.direction = 1;
+
+                // Add sphere to the scene
+                scene.add(this.mesh);
+            }
+
+            // Rotate the sphere on X and Y axes
+            rotate() {
+
+                this.mesh.rotation.x += 0.01;
+                this.mesh.rotation.y += 0.01;
+
+            }
+
+            // Move sphere horizontally
+            move() {
+
+                this.mesh.position.x += this.moveSpeed * this.direction;
+
+                // Reverse direction at the boundaries
+                if (this.mesh.position.x >= 2 || this.mesh.position.x <= -2) {
+                    this.direction *= -1;
+                }
+
+            }
+
+            // Update sphere movement and rotation
+            update() {
+
+                this.rotate();
+                this.move();
+
+            }
+
+        }
+
+        // Create a sphere object
+        var sphere = new Sphere();
 
         // Add a white spotlight to illuminate the sphere
         var spotLight = new THREE.SpotLight(0xffffff);
@@ -52,29 +97,14 @@
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
-        // Set the sphere's horizontal movement speed
-        var moveSpeed = 0.02;
-
-        // Set the direction of movement
-        var direction = 1;
-
-        // Animation loop to rotate and move the sphere
+        // Animation loop to update the sphere
         function repeatMe() {
 
             // Request the next animation frame
             requestAnimationFrame(repeatMe);
 
-            // Rotate sphere on X and Y axes
-            sphere.rotation.x += 0.01;
-            sphere.rotation.y += 0.01;
-
-            // Move sphere horizontally
-            sphere.position.x += moveSpeed * direction;
-
-            // Reverse direction when sphere reaches the boundaries
-            if (sphere.position.x >= 2 || sphere.position.x <= -2) {
-                direction *= -1;
-            }
+            // Update sphere rotation and movement
+            sphere.update();
 
             // Render the updated scene
             renderer.render(scene, camera);
