@@ -36,36 +36,39 @@
         // Sphere class to manage geometry, material and movement
         class Sphere {
 
-            constructor() {
+            constructor(color, startX, direction) {
 
                 // Create sphere geometry
                 this.geometry = new THREE.SphereGeometry(1, 32, 32);
 
-                // Create sphere material with wireframe disabled
+                // Create sphere material
                 this.material = new THREE.MeshLambertMaterial({
-                    color: 0x00ff00,
+                    color: color,
                     wireframe: false
                 });
 
                 // Create sphere using geometry and material
                 this.mesh = new THREE.Mesh(this.geometry, this.material);
 
-                // Position sphere above the plane
-                this.mesh.position.y = 3;
+                // Set starting position above the plane
+                this.mesh.position.set(startX, 2, 0);
 
                 // Allow sphere to cast shadows
                 this.mesh.castShadow = true;
+
+                // Set sphere radius for collision detection
+                this.radius = 1;
 
                 // Set horizontal movement speed
                 this.moveSpeed = 0.02;
 
                 // Set initial movement direction
-                this.direction = 1;
+                this.direction = direction;
 
                 // Set vertical movement speed
                 this.velocityY = 0;
 
-                // Set gravity to pull the sphere down
+                // Set gravity
                 this.gravity = -0.005;
 
                 // Set bounce strength
@@ -75,7 +78,7 @@
                 scene.add(this.mesh);
             }
 
-            // Rotate the sphere on X and Y axes
+            // Rotate sphere on X and Y axes
             rotate() {
 
                 this.mesh.rotation.x += 0.01;
@@ -89,8 +92,18 @@
                 this.mesh.position.x += this.moveSpeed * this.direction;
 
                 // Reverse direction at the boundaries
-                if (this.mesh.position.x >= 2 || this.mesh.position.x <= -2) {
-                    this.direction *= -1;
+                if (this.mesh.position.x >= 2.5) {
+
+                    this.mesh.position.x = 2.5;
+                    this.direction = -1;
+
+                }
+
+                if (this.mesh.position.x <= -2.5) {
+
+                    this.mesh.position.x = -2.5;
+                    this.direction = 1;
+
                 }
 
             }
@@ -105,10 +118,10 @@
                 this.mesh.position.y += this.velocityY;
 
                 // Check if sphere has touched the plane
-                if (this.mesh.position.y <= 1) {
+                if (this.mesh.position.y <= this.radius) {
 
                     // Keep sphere above the plane
-                    this.mesh.position.y = 1;
+                    this.mesh.position.y = this.radius;
 
                     // Bounce sphere upwards
                     this.velocityY = this.bounceStrength;
@@ -128,10 +141,67 @@
 
         }
 
-        // Create a sphere object
-        var sphere = new Sphere();
+        // Create the first green sphere
+        var sphere1 = new Sphere(0x00ff00, -2.5, 1);
 
-        // Create a flat plane below the sphere
+        // Create the second blue sphere
+        var sphere2 = new Sphere(0x0000ff, 2.5, -1);
+
+        // Detect collisions between the two spheres
+        function checkCollision() {
+
+            // Calculate distance between sphere centres
+            var distance = sphere1.mesh.position.distanceTo(
+                sphere2.mesh.position
+            );
+
+            // Calculate minimum distance before collision
+            var minimumDistance = sphere1.radius + sphere2.radius;
+
+            // Check if spheres are touching
+            if (distance < minimumDistance) {
+
+                // Calculate collision direction
+                var collisionDirection = new THREE.Vector3();
+
+                collisionDirection.subVectors(
+                    sphere2.mesh.position,
+                    sphere1.mesh.position
+                );
+
+                // Avoid dividing by zero
+                if (collisionDirection.lengthSq() === 0) {
+                    collisionDirection.set(1, 0, 0);
+                }
+
+                collisionDirection.normalize();
+
+                // Separate overlapping spheres
+                var overlap = minimumDistance - distance;
+
+                sphere1.mesh.position.addScaledVector(
+                    collisionDirection,
+                    -overlap / 2
+                );
+
+                sphere2.mesh.position.addScaledVector(
+                    collisionDirection,
+                    overlap / 2
+                );
+
+                // Make spheres move away from each other
+                sphere1.direction = -1;
+                sphere2.direction = 1;
+
+                // Make both spheres bounce upwards
+                sphere1.velocityY = sphere1.bounceStrength;
+                sphere2.velocityY = sphere2.bounceStrength;
+
+            }
+
+        }
+
+        // Create a flat plane below the spheres
         var planeGeometry = new THREE.PlaneGeometry(12, 8);
 
         // Create plane material that reacts to light
@@ -146,7 +216,7 @@
         // Rotate plane so it lies horizontally
         plane.rotation.x = -Math.PI / 2;
 
-        // Position plane below the sphere
+        // Position plane below the spheres
         plane.position.y = 0;
 
         // Allow plane to receive shadows
@@ -155,13 +225,13 @@
         // Add plane to the scene
         scene.add(plane);
 
-        // Add a white spotlight to illuminate the sphere
+        // Add a white spotlight to illuminate the spheres
         var spotLight = new THREE.SpotLight(0xffffff, 1.5);
 
-        // Position spotlight above the sphere and plane
+        // Position spotlight above the spheres and plane
         spotLight.position.set(1, 6, 4);
 
-        // Point spotlight towards the centre of the scene
+        // Point spotlight towards the centre
         spotLight.target.position.set(0, 0, 0);
         scene.add(spotLight.target);
 
@@ -179,7 +249,9 @@
         scene.add(spotLight);
 
         // Add camera helper to display spotlight shadow camera
-        var cameraHelper = new THREE.CameraHelper(spotLight.shadow.camera);
+        var cameraHelper = new THREE.CameraHelper(
+            spotLight.shadow.camera
+        );
         scene.add(cameraHelper);
 
         // Implement renderer - Create a WebGL renderer for rendering the scene.
@@ -199,17 +271,22 @@
         // Add renderer canvas to the page
         document.body.appendChild(renderer.domElement);
 
-        // Animation loop to update the sphere
+        // Animation loop to update both spheres
         function repeatMe() {
 
             // Request the next animation frame
             requestAnimationFrame(repeatMe);
 
-            // Update sphere rotation, movement and bouncing
-            sphere.update();
+            // Update both spheres
+            sphere1.update();
+            sphere2.update();
+
+            // Check for collision between spheres
+            checkCollision();
 
             // Render the updated scene
             renderer.render(scene, camera);
+
         }
 
         // Start the animation loop
