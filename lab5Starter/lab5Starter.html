@@ -30,10 +30,10 @@
         // Create sphere geometry
         var geometry = new THREE.SphereGeometry(1, 32, 32);
 
-        // Create sphere material with wireframe enabled
-        var material = new THREE.MeshBasicMaterial({
+        // Create sphere material with wireframe disabled
+        var material = new THREE.MeshLambertMaterial({
             color: 0x00ff00,
-            wireframe: true
+            wireframe: false
         });
 
         // Create sphere using geometry and material
@@ -41,6 +41,11 @@
 
         // Add sphere to the scene
         scene.add(sphere);
+
+        // Add a white spotlight to illuminate the sphere
+        var spotLight = new THREE.SpotLight(0xffffff);
+        spotLight.position.set(1, 0.5, 1);
+        scene.add(spotLight);
 
         // Implement renderer - Create a WebGL renderer for rendering the scene.
         var renderer = new THREE.WebGLRenderer();
