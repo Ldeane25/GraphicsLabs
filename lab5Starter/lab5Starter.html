@@ -51,7 +51,7 @@
                 this.mesh = new THREE.Mesh(this.geometry, this.material);
 
                 // Position sphere above the plane
-                this.mesh.position.y = 1.5;
+                this.mesh.position.y = 3;
 
                 // Allow sphere to cast shadows
                 this.mesh.castShadow = true;
@@ -61,6 +61,15 @@
 
                 // Set initial movement direction
                 this.direction = 1;
+
+                // Set vertical movement speed
+                this.velocityY = 0;
+
+                // Set gravity to pull the sphere down
+                this.gravity = -0.005;
+
+                // Set bounce strength
+                this.bounceStrength = 0.15;
 
                 // Add sphere to the scene
                 scene.add(this.mesh);
@@ -86,11 +95,34 @@
 
             }
 
-            // Update sphere movement and rotation
+            // Make sphere fall and bounce off the plane
+            bounce() {
+
+                // Apply gravity to vertical speed
+                this.velocityY += this.gravity;
+
+                // Update vertical position
+                this.mesh.position.y += this.velocityY;
+
+                // Check if sphere has touched the plane
+                if (this.mesh.position.y <= 1) {
+
+                    // Keep sphere above the plane
+                    this.mesh.position.y = 1;
+
+                    // Bounce sphere upwards
+                    this.velocityY = this.bounceStrength;
+
+                }
+
+            }
+
+            // Update sphere movement, rotation and bouncing
             update() {
 
                 this.rotate();
                 this.move();
+                this.bounce();
 
             }
 
@@ -173,7 +205,7 @@
             // Request the next animation frame
             requestAnimationFrame(repeatMe);
 
-            // Update sphere rotation and movement
+            // Update sphere rotation, movement and bouncing
             sphere.update();
 
             // Render the updated scene
