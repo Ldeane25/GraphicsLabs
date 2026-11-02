@@ -52,7 +52,13 @@
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
-        // Animation loop to rotate the sphere
+        // Set the sphere's horizontal movement speed
+        var moveSpeed = 0.02;
+
+        // Set the direction of movement
+        var direction = 1;
+
+        // Animation loop to rotate and move the sphere
         function repeatMe() {
 
             // Request the next animation frame
@@ -61,6 +67,14 @@
             // Rotate sphere on X and Y axes
             sphere.rotation.x += 0.01;
             sphere.rotation.y += 0.01;
+
+            // Move sphere horizontally
+            sphere.position.x += moveSpeed * direction;
+
+            // Reverse direction when sphere reaches the boundaries
+            if (sphere.position.x >= 2 || sphere.position.x <= -2) {
+                direction *= -1;
+            }
 
             // Render the updated scene
             renderer.render(scene, camera);
