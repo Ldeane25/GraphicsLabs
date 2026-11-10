@@ -37,6 +37,21 @@
 
             const width = svgWidth - margin.left - margin.right;
             const height = svgHeight - margin.top - margin.bottom;
+
+            // Convert years ago into horizontal positions
+            const xScale = d3.scaleLinear()
+                .domain(d3.extent(data, function(d) {
+                    return d.years_before_2023;
+                }))
+                .range([0, width]);
+
+            // Convert CO2 values into vertical positions
+            const yScale = d3.scaleLinear()
+                .domain(d3.extent(data, function(d) {
+                    return d.co2_ppmv;
+                }))
+                .nice()
+                .range([height, 0]);
         }
     </script>
 </body>
