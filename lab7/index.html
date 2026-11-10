@@ -5,12 +5,22 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>D3 CO2 Lab - Luke Deane</title>
 </head>
 
 <body>
     <h1>Luke Deane</h1>
+
+    <script>
+        // Download the CO2 data
+        d3.json("https://raw.githubusercontent.com/humphs078/programming_for_data_analysis_assignment_2/refs/heads/main/datasets/fused_datasets/json/long_term_fused_data.json")
+            .then(function(data) {
+                console.log(data);
+            })
+            .catch(function(error) {
+                console.log("Error loading CO2 data:", error);
+            });
+    </script>
 </body>
 
 </html>
