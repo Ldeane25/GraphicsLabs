@@ -52,6 +52,44 @@
                 }))
                 .nice()
                 .range([height, 0]);
+
+            // Create the axes with integer tick labels
+            const xAxis = d3.axisBottom(xScale)
+                .ticks(10)
+                .tickFormat(d3.format("d"));
+
+            const yAxis = d3.axisLeft(yScale)
+                .ticks(8)
+                .tickFormat(d3.format("d"));
+
+            // Set up the line coordinates
+            const line = d3.line()
+                .x(function(d) {
+                    return xScale(d.years_before_2023);
+                })
+                .y(function(d) {
+                    return yScale(d.co2_ppmv);
+                });
+
+            // Add the SVG to the page
+            const svg = d3.select("body")
+                .append("svg")
+                .attr("width", svgWidth)
+                .attr("height", svgHeight);
+
+            // Move the chart group inside the margins
+            const chart = svg.append("g")
+                .attr("transform",
+                    "translate(" + margin.left + "," + margin.top + ")");
+
+            // Place the x-axis at the bottom
+            chart.append("g")
+                .attr("transform", "translate(0," + height + ")")
+                .call(xAxis);
+
+            // Place the y-axis on the left
+            chart.append("g")
+                .call(yAxis);
         }
     </script>
 </body>
