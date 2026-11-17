@@ -75,7 +75,8 @@
             const svg = d3.select("body")
                 .append("svg")
                 .attr("width", svgWidth)
-                .attr("height", svgHeight);
+                .attr("height", svgHeight)
+                .style("font-family", "Arial, sans-serif");
 
             // Move the chart group inside the margins
             const chart = svg.append("g")
@@ -85,11 +86,13 @@
             // Place the x-axis at the bottom
             chart.append("g")
                 .attr("transform", "translate(0," + height + ")")
-                .call(xAxis);
+                .call(xAxis)
+                .style("font-size", "14px");
 
             // Place the y-axis on the left
             chart.append("g")
-                .call(yAxis);
+                .call(yAxis)
+                .style("font-size", "14px");
 
             // Draw the CO2 line
             chart.append("path")
@@ -98,6 +101,32 @@
                 .attr("stroke", "red")
                 .attr("stroke-width", 2)
                 .attr("d", line);
+
+            // Chart title
+            chart.append("text")
+                .attr("x", width / 2)
+                .attr("y", -20)
+                .attr("text-anchor", "middle")
+                .style("font-size", "22px")
+                .style("font-weight", "bold")
+                .text("Atmospheric CO₂ Over Time");
+
+            // X-axis label
+            chart.append("text")
+                .attr("x", width / 2)
+                .attr("y", height + 45)
+                .attr("text-anchor", "middle")
+                .style("font-size", "16px")
+                .text("Years ago (relative to 2023)");
+
+            // Y-axis label
+            chart.append("text")
+                .attr("transform", "rotate(-90)")
+                .attr("x", -height / 2)
+                .attr("y", -55)
+                .attr("text-anchor", "middle")
+                .style("font-size", "16px")
+                .text("CO₂ (ppm)");
         }
     </script>
 </body>
