@@ -12,7 +12,7 @@
     <h1>Luke Deane</h1>
 
     <script>
-        // Download the CO2 data
+        // Download the data
         d3.json("https://raw.githubusercontent.com/humphs078/programming_for_data_analysis_assignment_2/refs/heads/main/datasets/fused_datasets/json/long_term_fused_data.json")
             .then(function(data) {
                 console.log(data);
@@ -24,13 +24,13 @@
 
         function plotCO2Data(data) {
             // SVG size
-            const svgWidth = 900;
-            const svgHeight = 500;
+            const svgWidth = 1100;
+            const svgHeight = 550;
 
-            // Space around the graph for labels and axes
+            // Extra space for the legend and right-hand axes
             const margin = {
-                top: 50,
-                right: 30,
+                top: 80,
+                right: 230,
                 bottom: 60,
                 left: 80
             };
@@ -38,14 +38,14 @@
             const width = svgWidth - margin.left - margin.right;
             const height = svgHeight - margin.top - margin.bottom;
 
-            // Convert years ago into horizontal positions
+            // Shared time scale
             const xScale = d3.scaleLinear()
                 .domain(d3.extent(data, function(d) {
                     return d.years_before_2023;
                 }))
                 .range([0, width]);
 
-            // Convert CO2 values into vertical positions
+            // CO2 scale
             const yScale = d3.scaleLinear()
                 .domain(d3.extent(data, function(d) {
                     return d.co2_ppmv;
@@ -53,7 +53,23 @@
                 .nice()
                 .range([height, 0]);
 
-            // Create the axes with integer tick labels
+            // Temperature scale
+            const temperatureScale = d3.scaleLinear()
+                .domain(d3.extent(data, function(d) {
+                    return d.temp_anomaly;
+                }))
+                .nice()
+                .range([height, 0]);
+
+            // Methane scale
+            const methaneScale = d3.scaleLinear()
+                .domain(d3.extent(data, function(d) {
+                    return d.ch4_ppb;
+                }))
+                .nice()
+                .range([height, 0]);
+
+            // Create the axes
             const xAxis = d3.axisBottom(xScale)
                 .ticks(10)
                 .tickFormat(d3.format("d"));
@@ -62,7 +78,14 @@
                 .ticks(8)
                 .tickFormat(d3.format("d"));
 
-            // Set up the line coordinates
+            const temperatureAxis = d3.axisRight(temperatureScale)
+                .ticks(8);
+
+            const methaneAxis = d3.axisRight(methaneScale)
+                .ticks(8)
+                .tickFormat(d3.format("d"));
+
+            // CO2 line
             const line = d3.line()
                 .x(function(d) {
                     return xScale(d.years_before_2023);
@@ -71,30 +94,62 @@
                     return yScale(d.co2_ppmv);
                 });
 
-            // Add the SVG to the page
+            // Temperature line
+            const temperatureLine = d3.line()
+                .x(function(d) {
+                    return xScale(d.years_before_2023);
+                })
+                .y(function(d) {
+                    return temperatureScale(d.temp_anomaly);
+                });
+
+            // Methane line
+            const methaneLine = d3.line()
+                .x(function(d) {
+                    return xScale(d.years_before_2023);
+                })
+                .y(function(d) {
+                    return methaneScale(d.ch4_ppb);
+                });
+
+            // Add the SVG
             const svg = d3.select("body")
                 .append("svg")
                 .attr("width", svgWidth)
                 .attr("height", svgHeight)
                 .style("font-family", "Arial, sans-serif");
 
-            // Move the chart group inside the margins
             const chart = svg.append("g")
                 .attr("transform",
                     "translate(" + margin.left + "," + margin.top + ")");
 
-            // Place the x-axis at the bottom
+            // Bottom time axis
             chart.append("g")
                 .attr("transform", "translate(0," + height + ")")
                 .call(xAxis)
                 .style("font-size", "14px");
 
-            // Place the y-axis on the left
+            // Left CO2 axis
             chart.append("g")
                 .call(yAxis)
-                .style("font-size", "14px");
+                .style("font-size", "14px")
+                .style("color", "red");
 
-            // Draw the CO2 line
+            // Right temperature axis
+            chart.append("g")
+                .attr("transform", "translate(" + width + ",0)")
+                .call(temperatureAxis)
+                .style("font-size", "14px")
+                .style("color", "blue");
+
+            // Methane axis further to the right
+            chart.append("g")
+                .attr("transform", "translate(" + (width + 110) + ",0)")
+                .call(methaneAxis)
+                .style("font-size", "14px")
+                .style("color", "green");
+
+            // Draw CO2
             chart.append("path")
                 .datum(data)
                 .attr("fill", "none")
@@ -102,14 +157,60 @@
                 .attr("stroke-width", 2)
                 .attr("d", line);
 
+            // Draw temperature
+            chart.append("path")
+                .datum(data)
+                .attr("fill", "none")
+                .attr("stroke", "blue")
+                .attr("stroke-width", 2)
+                .attr("d", temperatureLine);
+
+            // Draw methane
+            chart.append("path")
+                .datum(data)
+                .attr("fill", "none")
+                .attr("stroke", "green")
+                .attr("stroke-width", 2)
+                .attr("d", methaneLine);
+
             // Chart title
             chart.append("text")
                 .attr("x", width / 2)
-                .attr("y", -20)
+                .attr("y", -50)
                 .attr("text-anchor", "middle")
                 .style("font-size", "22px")
                 .style("font-weight", "bold")
-                .text("Atmospheric CO₂ Over Time");
+                .text("CO₂, Temperature and Methane Over Time");
+
+            // Legend
+            const legendData = [
+                { label: "CO₂", color: "red" },
+                { label: "Temperature anomaly", color: "blue" },
+                { label: "Methane", color: "green" }
+            ];
+
+            const legend = chart.append("g")
+                .attr("transform", "translate(0,-25)");
+
+            legendData.forEach(function(item, index) {
+                const entry = legend.append("g")
+                    .attr("transform",
+                        "translate(" + (index * 250) + ",0)");
+
+                entry.append("line")
+                    .attr("x1", 0)
+                    .attr("x2", 25)
+                    .attr("y1", 0)
+                    .attr("y2", 0)
+                    .attr("stroke", item.color)
+                    .attr("stroke-width", 2);
+
+                entry.append("text")
+                    .attr("x", 35)
+                    .attr("y", 5)
+                    .style("font-size", "14px")
+                    .text(item.label);
+            });
 
             // X-axis label
             chart.append("text")
@@ -119,14 +220,35 @@
                 .style("font-size", "16px")
                 .text("Years ago (relative to 2023)");
 
-            // Y-axis label
+            // CO2 axis label
             chart.append("text")
                 .attr("transform", "rotate(-90)")
                 .attr("x", -height / 2)
                 .attr("y", -55)
                 .attr("text-anchor", "middle")
+                .attr("fill", "red")
                 .style("font-size", "16px")
                 .text("CO₂ (ppm)");
+
+            // Temperature axis label
+            chart.append("text")
+                .attr("transform",
+                    "translate(" + (width + 65) + "," +
+                    (height / 2) + ") rotate(-90)")
+                .attr("text-anchor", "middle")
+                .attr("fill", "blue")
+                .style("font-size", "16px")
+                .text("Temperature anomaly (°C)");
+
+            // Methane axis label
+            chart.append("text")
+                .attr("transform",
+                    "translate(" + (width + 195) + "," +
+                    (height / 2) + ") rotate(-90)")
+                .attr("text-anchor", "middle")
+                .attr("fill", "green")
+                .style("font-size", "16px")
+                .text("Methane (ppb)");
         }
     </script>
 </body>
