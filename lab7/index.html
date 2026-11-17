@@ -23,11 +23,9 @@
             });
 
         function plotCO2Data(data) {
-            // SVG size
             const svgWidth = 1100;
-            const svgHeight = 550;
+            const svgHeight = 750;
 
-            // Extra space for the legend and right-hand axes
             const margin = {
                 top: 80,
                 right: 230,
@@ -36,7 +34,9 @@
             };
 
             const width = svgWidth - margin.left - margin.right;
-            const height = svgHeight - margin.top - margin.bottom;
+            const height = 410;
+            const overviewTop = 590;
+            const overviewHeight = 90;
 
             // Shared time scale
             const xScale = d3.scaleLinear()
@@ -45,7 +45,6 @@
                 }))
                 .range([0, width]);
 
-            // CO2 scale
             const yScale = d3.scaleLinear()
                 .domain(d3.extent(data, function(d) {
                     return d.co2_ppmv;
@@ -53,7 +52,6 @@
                 .nice()
                 .range([height, 0]);
 
-            // Temperature scale
             const temperatureScale = d3.scaleLinear()
                 .domain(d3.extent(data, function(d) {
                     return d.temp_anomaly;
@@ -61,7 +59,6 @@
                 .nice()
                 .range([height, 0]);
 
-            // Methane scale
             const methaneScale = d3.scaleLinear()
                 .domain(d3.extent(data, function(d) {
                     return d.ch4_ppb;
@@ -69,7 +66,7 @@
                 .nice()
                 .range([height, 0]);
 
-            // Create the axes
+            // Axes
             const xAxis = d3.axisBottom(xScale)
                 .ticks(10)
                 .tickFormat(d3.format("d"));
@@ -85,7 +82,7 @@
                 .ticks(8)
                 .tickFormat(d3.format("d"));
 
-            // CO2 line
+            // Main chart lines
             const line = d3.line()
                 .x(function(d) {
                     return xScale(d.years_before_2023);
@@ -94,7 +91,6 @@
                     return yScale(d.co2_ppmv);
                 });
 
-            // Temperature line
             const temperatureLine = d3.line()
                 .x(function(d) {
                     return xScale(d.years_before_2023);
@@ -103,7 +99,6 @@
                     return temperatureScale(d.temp_anomaly);
                 });
 
-            // Methane line
             const methaneLine = d3.line()
                 .x(function(d) {
                     return xScale(d.years_before_2023);
@@ -112,14 +107,13 @@
                     return methaneScale(d.ch4_ppb);
                 });
 
-            // Add the SVG
             const svg = d3.select("body")
                 .append("svg")
                 .attr("width", svgWidth)
                 .attr("height", svgHeight)
                 .style("font-family", "Arial, sans-serif");
 
-            // Keep zoomed lines inside the chart area
+            // Stop zoomed lines extending outside the graph
             svg.append("defs")
                 .append("clipPath")
                 .attr("id", "chart-clip")
@@ -131,37 +125,31 @@
                 .attr("transform",
                     "translate(" + margin.left + "," + margin.top + ")");
 
-            // Bottom time axis
             const xAxisGroup = chart.append("g")
                 .attr("transform", "translate(0," + height + ")")
                 .call(xAxis)
                 .style("font-size", "14px");
 
-            // Left CO2 axis
             chart.append("g")
                 .call(yAxis)
                 .style("font-size", "14px")
                 .style("color", "red");
 
-            // Right temperature axis
             chart.append("g")
                 .attr("transform", "translate(" + width + ",0)")
                 .call(temperatureAxis)
                 .style("font-size", "14px")
                 .style("color", "blue");
 
-            // Methane axis further to the right
             chart.append("g")
                 .attr("transform", "translate(" + (width + 110) + ",0)")
                 .call(methaneAxis)
                 .style("font-size", "14px")
                 .style("color", "green");
 
-            // Group for the clipped lines
             const lines = chart.append("g")
                 .attr("clip-path", "url(#chart-clip)");
 
-            // Draw CO2
             const co2Path = lines.append("path")
                 .datum(data)
                 .attr("fill", "none")
@@ -169,7 +157,6 @@
                 .attr("stroke-width", 2)
                 .attr("d", line);
 
-            // Draw temperature
             const temperaturePath = lines.append("path")
                 .datum(data)
                 .attr("fill", "none")
@@ -177,7 +164,6 @@
                 .attr("stroke-width", 2)
                 .attr("d", temperatureLine);
 
-            // Draw methane
             const methanePath = lines.append("path")
                 .datum(data)
                 .attr("fill", "none")
@@ -194,7 +180,6 @@
                 .style("font-weight", "bold")
                 .text("CO₂, Temperature and Methane Over Time");
 
-            // Legend
             const legendData = [
                 { label: "CO₂", color: "red" },
                 { label: "Temperature anomaly", color: "blue" },
@@ -224,7 +209,7 @@
                     .text(item.label);
             });
 
-            // X-axis label
+            // Axis labels
             chart.append("text")
                 .attr("x", width / 2)
                 .attr("y", height + 45)
@@ -232,7 +217,6 @@
                 .style("font-size", "16px")
                 .text("Years ago (relative to 2023)");
 
-            // CO2 axis label
             chart.append("text")
                 .attr("transform", "rotate(-90)")
                 .attr("x", -height / 2)
@@ -242,7 +226,6 @@
                 .style("font-size", "16px")
                 .text("CO₂ (ppm)");
 
-            // Temperature axis label
             chart.append("text")
                 .attr("transform",
                     "translate(" + (width + 65) + "," +
@@ -252,7 +235,6 @@
                 .style("font-size", "16px")
                 .text("Temperature anomaly (°C)");
 
-            // Methane axis label
             chart.append("text")
                 .attr("transform",
                     "translate(" + (width + 195) + "," +
@@ -262,29 +244,91 @@
                 .style("font-size", "16px")
                 .text("Methane (ppb)");
 
-            // Set zoom limits and keep dragging inside the data range
+            // Overview keeps the full time range
+            const overview = svg.append("g")
+                .attr("transform",
+                    "translate(" + margin.left + "," + overviewTop + ")");
+
+            overview.append("text")
+                .attr("x", width / 2)
+                .attr("y", -15)
+                .attr("text-anchor", "middle")
+                .style("font-size", "14px")
+                .text("Drag the selection edges below to choose a time range");
+
+            const overviewCO2Scale = yScale.copy()
+                .range([overviewHeight, 0]);
+
+            const overviewTemperatureScale = temperatureScale.copy()
+                .range([overviewHeight, 0]);
+
+            const overviewMethaneScale = methaneScale.copy()
+                .range([overviewHeight, 0]);
+
+            // Draw each series in the smaller chart
+            function addOverviewLine(field, scale, color) {
+                const overviewLine = d3.line()
+                    .x(function(d) {
+                        return xScale(d.years_before_2023);
+                    })
+                    .y(function(d) {
+                        return scale(d[field]);
+                    });
+
+                overview.append("path")
+                    .datum(data)
+                    .attr("fill", "none")
+                    .attr("stroke", color)
+                    .attr("stroke-width", 1)
+                    .attr("d", overviewLine);
+            }
+
+            addOverviewLine("co2_ppmv", overviewCO2Scale, "red");
+            addOverviewLine("temp_anomaly", overviewTemperatureScale, "blue");
+            addOverviewLine("ch4_ppb", overviewMethaneScale, "green");
+
+            overview.append("g")
+                .attr("transform", "translate(0," + overviewHeight + ")")
+                .call(d3.axisBottom(xScale)
+                    .ticks(10)
+                    .tickFormat(d3.format("d")))
+                .style("font-size", "14px");
+
+            // Prevent brush and zoom from repeatedly triggering each other
+            let syncing = false;
+
             const zoom = d3.zoom()
                 .scaleExtent([1, 20])
                 .extent([[0, 0], [width, height]])
                 .translateExtent([[0, 0], [width, height]])
                 .on("zoom", zoomed);
 
-            // Transparent area captures mouse actions
-            chart.append("rect")
+            const brush = d3.brushX()
+                .extent([[0, 0], [width, overviewHeight]])
+                .on("brush end", brushed);
+
+            const zoomArea = chart.append("rect")
                 .attr("width", width)
                 .attr("height", height)
                 .attr("fill", "none")
                 .attr("pointer-events", "all")
-                .style("cursor", "move")
-                .call(zoom);
+                .style("cursor", "move");
+
+            const brushGroup = overview.append("g");
+
+            zoomArea.call(zoom);
+            brushGroup.call(brush);
+
+            // Start with the full range selected
+            syncing = true;
+            brushGroup.call(brush.move, [0, width]);
+            syncing = false;
 
             function zoomed(event) {
-                // Change only the horizontal scale
                 const zoomedX = event.transform.rescaleX(xScale);
 
                 xAxisGroup.call(xAxis.scale(zoomedX));
 
-                // Update x positions while keeping y positions fixed
                 line.x(function(d) {
                     return zoomedX(d.years_before_2023);
                 });
@@ -300,6 +344,60 @@
                 co2Path.attr("d", line);
                 temperaturePath.attr("d", temperatureLine);
                 methanePath.attr("d", methaneLine);
+
+                // Move the brush to match the zoomed time range
+                if (!syncing) {
+                    syncing = true;
+
+                    brushGroup.call(brush.move, [
+                        event.transform.invertX(0),
+                        event.transform.invertX(width)
+                    ]);
+
+                    syncing = false;
+                }
+            }
+
+            function brushed(event) {
+                if (syncing) {
+                    return;
+                }
+
+                // Clearing the selection restores the full range
+                const selection = event.selection || [0, width];
+
+                // Keep the brush within the same 20x zoom limit
+                const selectedWidth = Math.max(
+                    selection[1] - selection[0],
+                    width / 20
+                );
+
+                const centre = (selection[0] + selection[1]) / 2;
+
+                const left = Math.max(
+                    0,
+                    Math.min(width - selectedWidth,
+                        centre - selectedWidth / 2)
+                );
+
+                const right = left + selectedWidth;
+                const scale = width / selectedWidth;
+
+                const transform = d3.zoomIdentity
+                    .scale(scale)
+                    .translate(-left, 0);
+
+                syncing = true;
+
+                // Update the main chart and its zoom state
+                zoomArea.call(zoom.transform, transform);
+
+                // Snap very small selections to the zoom limit
+                if (event.type === "end") {
+                    brushGroup.call(brush.move, [left, right]);
+                }
+
+                syncing = false;
             }
         }
     </script>
