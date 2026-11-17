@@ -90,6 +90,14 @@
             // Place the y-axis on the left
             chart.append("g")
                 .call(yAxis);
+
+            // Draw the CO2 line
+            chart.append("path")
+                .datum(data)
+                .attr("fill", "none")
+                .attr("stroke", "red")
+                .attr("stroke-width", 2)
+                .attr("d", line);
         }
     </script>
 </body>
